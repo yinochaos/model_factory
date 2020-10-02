@@ -33,7 +33,11 @@ class Seq2seqModel(Model):
         self.hidden_size = encoder.hidden_size
         self.max_decoder_len = max_decoder_len
 
-    # def summary(self):
+    def summary(self):
+        print('encoder')
+        self.encoder.summary()
+        print('decoder')
+        self.decoder.summary()
 
     def predict(self, inputs, bos_token_id=None, eos_token_id=None, token_dict=None):
         def id_to_tokens(ids, token_dict):

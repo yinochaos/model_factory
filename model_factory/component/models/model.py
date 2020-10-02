@@ -58,7 +58,7 @@ class Model(object):
 
         with tqdm.tqdm(total=train_dataset_len) as p_bar:
             for (batchs, (inputs, targets)) in enumerate(train_dataset):
-                batch_loss = self.train_step(inputs[0], targets)
+                batch_loss = self.train_step(inputs, targets)
                 total_loss.append(batch_loss.numpy())
                 if batchs % bar_step == 0:
                     p_bar.update(bar_step)

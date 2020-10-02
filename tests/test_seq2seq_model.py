@@ -6,8 +6,8 @@
 
 import unittest
 import tensorflow as tf
-
-from datasets.raw_dataset import RawDataset
+from datasets import TextlineParser
+from datasets import TFDataset
 from datasets.utils import TokenDicts, DataSchema
 from model_factory.component.models import Seq2seqModel
 from model_factory.component.losses import seq2seq_cross_entropy_loss
@@ -85,16 +85,17 @@ class TestDatasets(unittest.TestCase):
         token_dicts = TokenDicts('tests/data/dicts', {'query': 0})
         data_field_list = []
         #param = ["name", "processor", "type", "dtype", "shape", "max_len", "token_dict_name"]
-        data_field_list.append(DataSchema(name='query', processor='to_tokenid', type=tf.int32,
+        data_field_list.append(DataSchema(name='query', processor='to_tokenid',
                                           dtype='int32', shape=(None,), is_with_len=False, token_dict_name='query'))
         label_field = DataSchema(
-            name='label', processor='to_tokenid', type=tf.int32, dtype='int32', shape=(None,), is_with_len=False, token_dict_name='query')
-        generator = RawDataset(file_path='tests/data', token_dicts=token_dicts,
-                               data_field_list=data_field_list, label_field=label_field, file_suffix='text_seq2seq.input')
-        dataset = generator.generate_dataset(
-            batch_size=12, num_epochs=60, is_shuffle=False)
-        # for (batchs, (inputs, targets)) in enumerate(dataset):
-        #    print('bacths', batchs, 'inputs', inputs, 'targets', targets)
+            name='label', processor='to_tokenid', dtype='int32', shape=(None,), is_with_len=False, token_dict_name='query')
+        parser = TextlineParser(token_dicts, data_field_list, label_field)
+        generator = TFDataset(parser=parser, file_path='tests/data', file_suffix='text_seq2seq.input')
+        dataset = generator.generate_dataset(batch_size=12, num_epochs=60, is_shuffle=False)
+        for (batchs, (inputs, targets)) in enumerate(dataset):
+            print('bacths', batchs, 'inputs', inputs, 'targets', targets)
+            if batchs>3:
+                break
         query_vocab_size = token_dicts.dict_size_by_name('query')
         print('query_size', query_vocab_size)
         print('<s>', token_dicts.to_id('query', '<s>'))
@@ -104,6 +105,7 @@ class TestDatasets(unittest.TestCase):
 
         optimizer = tf.keras.optimizers.Adam()
         model = Seq2seqModel(optimizer, seq2seq_cross_entropy_loss, encoder, decoder)
+        #model.summary()
         model.fit(dataset, 12, epochs=8, bar_step=10)
 
 
