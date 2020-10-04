@@ -9,8 +9,8 @@ import tensorflow as tf
 from datasets import TextlineParser
 from datasets import TFDataset
 from datasets.utils import TokenDicts, DataSchema
-from model_factory.component.models import Seq2seqModel
-from model_factory.component.losses import seq2seq_cross_entropy_loss
+from model_factory.models import Seq2seqModel
+from model_factory.losses import seq2seq_cross_entropy_loss
 
 import tensorflow as tf
 import numpy as np
@@ -82,6 +82,10 @@ class TestDatasets(unittest.TestCase):
     def test_text_seq2seq_model(self):
         """Test something."""
         # init token_dicts
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        print(gpus)
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
         token_dicts = TokenDicts('tests/data/dicts', {'query': 0})
         data_field_list = []
         #param = ["name", "processor", "type", "dtype", "shape", "max_len", "token_dict_name"]
@@ -94,7 +98,7 @@ class TestDatasets(unittest.TestCase):
         dataset = generator.generate_dataset(batch_size=12, num_epochs=60, is_shuffle=False)
         for (batchs, (inputs, targets)) in enumerate(dataset):
             print('bacths', batchs, 'inputs', inputs, 'targets', targets)
-            if batchs>3:
+            if batchs > 3:
                 break
         query_vocab_size = token_dicts.dict_size_by_name('query')
         print('query_size', query_vocab_size)
@@ -105,7 +109,7 @@ class TestDatasets(unittest.TestCase):
 
         optimizer = tf.keras.optimizers.Adam()
         model = Seq2seqModel(optimizer, seq2seq_cross_entropy_loss, encoder, decoder)
-        #model.summary()
+        # model.summary()
         model.fit(dataset, 12, epochs=8, bar_step=10)
 
 

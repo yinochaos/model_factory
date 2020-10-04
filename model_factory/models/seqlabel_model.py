@@ -19,7 +19,7 @@
 """
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
-from model_factory.component.models.model import Model
+from model_factory.models.model import Model
 
 
 class SeqlabelModel(Model):

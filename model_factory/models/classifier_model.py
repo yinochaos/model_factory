@@ -19,19 +19,9 @@
 """
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
-from model_factory.component.models.model import Model
+from model_factory.models.model import Model
 
 
 class ClassiferModel(Model):
-    def __init__(self, optimier, loss):
-        self.optimier = optimier
-        self.loss = loss
-
-    def fit(self, train_dataset, batch_size, epochs=1, valid_dataset=None, step_per_epoch=None, callbacks: List[tf.keras.callbacks.Callback] = None):
-        raise NotImplementedError
-
-    def predict(self):
-        raise NotImplementedError
-
-    def train_step(self):
-        raise NotImplementedError
+    def __init__(self, optimizer, loss, model):
+        super(ClassiferModel, self).__init__(optimizer, loss, model)

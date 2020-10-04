@@ -25,9 +25,12 @@ import numpy as np
 
 
 class Model(object):
-    def __init__(self, optimier, loss):
-        self.optimier = optimier
+    def __init__(self, optimizer, loss, model):
+        self.optimizer = optimizer
         self.loss = loss
+        self.model = model
+        self.model.compile(optimizer=self.optimizer, loss=self.loss)
+        self.num_loss = 1
 
     def fit(self, train_dataset, batch_size, epochs=1, valid_dataset=None, step_per_epoch=None,
             callbacks: List[tf.keras.callbacks.Callback] = None, bar_step=1, train_dataset_len=None):
@@ -59,11 +62,14 @@ class Model(object):
         with tqdm.tqdm(total=train_dataset_len) as p_bar:
             for (batchs, (inputs, targets)) in enumerate(train_dataset):
                 batch_loss = self.train_step(inputs, targets)
-                total_loss.append(batch_loss.numpy())
+                if not isinstance(batch_loss, float):
+                    batch_loss = batch_loss.numpy()
+                # TODO add multi_loss
+                total_loss.append(batch_loss)
                 if batchs % bar_step == 0:
                     p_bar.update(bar_step)
                     info = f"Epoch {epoch + 1}/{epochs} | Epoch Loss: {np.mean(total_loss):.4f} " \
-                        f"Batch Loss: {batch_loss.numpy():.4f}"
+                        f"Batch Loss: {batch_loss:.4f}"
                     p_bar.set_description_str(info)
                     total_batchs = batchs
         logs = {'loss': np.mean(total_loss)}
@@ -71,8 +77,13 @@ class Model(object):
             c.on_epoch_end(epoch=epoch, logs=logs)
         return total_batchs
 
-    def predict(self):
-        raise NotImplementedError
+    def predict(self, inputs):
+        return self.model.predict(inputs)
 
     def train_step(self, inputs, targets):
-        raise NotImplementedError
+        return self.model.train_on_batch(inputs, targets)
+        """
+        with tf.GradientTape() as tape:
+            predictions, dec_hidden, _ = self.decoder(dec_input, dec_hidden, enc_output)
+            loss += self.loss(targets[:, t], predictions)
+        """

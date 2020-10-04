@@ -18,7 +18,7 @@ import tqdm
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
 import numpy as np
-from model_factory.component.models.model import Model
+from model_factory.models.model import Model
 
 """ model interface
 """
@@ -74,7 +74,13 @@ class Seq2seqModel(Model):
             attentions.append(attention_plot)
         return results, attentions
 
-    # @tf.function
+    # here tf.function can fix error: tensorflow.python.framework.errors_impl.UnknownError: CUDNN_STATUS_BAD_PARAM
+    # in tensorflow/stream_executor/cuda/cuda_dnn.cc(1521):
+    # 'cudnnSetRNNDataDescriptor( data_desc.get(), data_type, layout,
+    # max_seq_length, batch_size, data_size, seq_lengths_array,
+    # (void*)&padding_fill)' [Op:CudnnRNNV3]
+
+    @tf.function
     def train_step(self, inputs, targets):
         loss = 0
         enc_hidden = tf.zeros((inputs.shape[0], self.hidden_size))
