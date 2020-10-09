@@ -31,6 +31,7 @@ class Model(object):
         self.model = model
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
         self.num_loss = 1
+        #self.train_step = self.model.train_on_batch
 
     def fit(self, train_dataset, batch_size, epochs=1, valid_dataset=None, step_per_epoch=None,
             callbacks: List[tf.keras.callbacks.Callback] = None, bar_step=1, train_dataset_len=None):
@@ -46,14 +47,14 @@ class Model(object):
         epochs_seq = [i for i in range(epochs)]
         if train_dataset_len is None:
             train_dataset_len = 10000
-            train_dataset_len = self.run_epoch(train_dataset, 0, epochs, callbacks, train_dataset_len, bar_step)
+            train_dataset_len = self.run_epoch(train_dataset, 0, epochs, callbacks, train_dataset_len, bar_step, batch_size)
             epochs_seq = epochs_seq[1:]
 
         for epoch in epochs_seq:
-            self.run_epoch(train_dataset, epoch, epochs, callbacks, train_dataset_len, bar_step)
+            self.run_epoch(train_dataset, epoch, epochs, callbacks, train_dataset_len, bar_step, batch_size)
         return history_callback
 
-    def run_epoch(self, train_dataset, epoch, epochs, callbacks, train_dataset_len, bar_step):
+    def run_epoch(self, train_dataset, epoch, epochs, callbacks, train_dataset_len, bar_step, batch_size):
         for c in callbacks:
             c.on_epoch_begin(epoch=epoch)
         total_loss = []
@@ -61,6 +62,12 @@ class Model(object):
 
         with tqdm.tqdm(total=train_dataset_len) as p_bar:
             for (batchs, (inputs, targets)) in enumerate(train_dataset):
+                #print('inputs', inputs)
+                #print('targets', targets)
+                if inputs.shape[0] != batch_size:
+                    continue
+                #if targets.shape[0] != batch_size:
+                #    continue
                 batch_loss = self.train_step(inputs, targets)
                 if not isinstance(batch_loss, float):
                     batch_loss = batch_loss.numpy()
