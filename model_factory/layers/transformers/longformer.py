@@ -23,16 +23,14 @@ import tensorflow as tf
 from model_factory.models.model import Model
 
 
-class RLModel(Model):
-    def __init__(self, optimier, loss):
-        self.optimier = optimier
-        self.loss = loss
+class Longformer(tf.keras.layers.Layer):
+    """
+    TODO add longformer
+    """
 
-    def fit(self, train_dataset, batch_size, epochs=1, valid_dataset=None, step_per_epoch=None, callbacks: List[tf.keras.callbacks.Callback] = None):
+    def __init__(self, hidden_size, dropout_prob, layer_norm_eps=1e-12, kernel_initializer='glorot_uniform', **kwargs):
+        super().__init__(**kwargs)
         raise NotImplementedError
 
-    def predict(self):
-        raise NotImplementedError
-
-    def train_step(self):
+    def call(self, inputs, training=False):
         raise NotImplementedError

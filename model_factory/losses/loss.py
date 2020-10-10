@@ -24,7 +24,7 @@ import tensorflow as tf
 
 def seq2seq_cross_entropy_loss(real, pred):
     cross_entropy = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
-    loss = cross_entropy(y_true=real, y_pred=pred)
+    loss = cross_entropy(y_true=real, y_pred=pred+1e-8)
     mask = tf.logical_not(tf.math.equal(real, 0))  # output 0 for y=0 else output 1
     mask = tf.cast(mask, dtype=loss.dtype)
     loss = mask * loss

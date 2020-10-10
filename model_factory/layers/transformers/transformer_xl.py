@@ -20,37 +20,23 @@
 
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
-from model_factory.layers.attentions.multihead_attention import MultiHeadAttention
+from model_factory.layers.attentions.multihead_attention import RelativeMultiHeadAttention
+from model_factory.layers.transformers.transformer import AddNorm
 
 
-class AddNorm(tf.keras.layers.Layer):
-    def __init__(self, hidden_size, dropout_prob, layer_norm_eps=1e-12, kernel_initializer='glorot_uniform', **kwargs):
-        super().__init__(**kwargs)
-
-        self.dense = tf.keras.layers.Dense(hidden_size, kernel_initializer=kernel_initializer, name="dense")
-        self.LayerNorm = tf.keras.layers.LayerNormalization(epsilon=layer_norm_eps, name="LayerNorm")
-        self.dropout = tf.keras.layers.Dropout(dropout_prob)
-
-    def call(self, hidden_states, input_tensor, training=False):
-        hidden_states = self.dense(hidden_states)
-        hidden_states = self.dropout(hidden_states, training=training)
-        hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        return hidden_states
-
-
-class Transformer(tf.keras.layers.Layer):
+class TransformerXL(tf.keras.layers.Layer):
     def __init__(self, num_heads, head_size, units, activation, hidden_size, dropout_prob,
                  layer_norm_eps, kernel_initializer='glorot_uniform', **kwargs):
         super().__init__(**kwargs)
         # @TODO add MultiHeadAttention
-        self.attention = MultiHeadAttention(num_heads=num_heads, head_size=head_size, name="attention")
+        self.attention = RelativeMultiHeadAttention(num_heads=num_heads, head_size=head_size, name="attention")
         self.add_norm_attention = AddNorm(hidden_size, dropout_prob, layer_norm_eps, kernel_initializer)
         self.add_norm_out = AddNorm(hidden_size, dropout_prob, layer_norm_eps, kernel_initializer)
         self.forward = tf.keras.layers.Dense(units, activation=activation, kernel_initializer=kernel_initializer)
 
-    def call(self, inputs, attention_mask=None, is_output_attentions=False, training=False):
+    def call(self, inputs, rel_pos_embedding, mems, attention_mask=None, is_output_attentions=False, training=False):
         # TODO add convert attention_mask from (B,Sq) --> (B,H,Sq,Sq)
-        attention_outputs = self.attention([inputs, inputs], attention_mask, is_output_attentions, training=training)
+        attention_outputs = self.attention(inputs, rel_pos_embedding, mems, attention_mask, is_output_attentions, training=training)
         attention_output = attention_outputs[0]
         attention_output = self.add_norm_attention(attention_output, inputs, training=training)
         intermediate_output = self.forward(attention_output)
