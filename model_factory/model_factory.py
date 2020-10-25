@@ -141,8 +141,9 @@ class GraphModel(object):
     # code_type: tf, tf.keras, pytorch 等等
     # return model_code
     def generator_code(self, code_type='tf.keras'):
+        assert code_type == 'tf.keras', "only support tf.keras code generate"
         model_code = ''
-        # @TODO
+        # TODO
         return model_code
 
 

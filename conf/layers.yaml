@@ -1,0 +1,68 @@
+tf.LSTM:
+    name: lstm
+    define: tf.keras.layers.LSTM()
+    type: reduce_dimT
+    inputs:
+        - ('X,T,E',True)
+    params:
+        - units : 200
+        - return_sequences : False
+        - activation : 'tanh'
+        - recurrent_activation : 'sigmoid'
+        - use_bias : True
+
+tf.GRU:
+    name: gru
+    define: tf.keras.layers.GRU()
+    type: reduce_dimT
+    inputs:
+        - ('X,T,E',True)
+    params:
+        - units : 200
+        - return_sequences : False
+        - activation : 'tanh'
+        - recurrent_activation : 'sigmoid'
+        - use_bias : True
+
+tf.LSTM1:
+    name: lstm
+    define: tf.keras.layers.LSTM()
+    type: trans_dimT
+    inputs:
+        - ('X,T,E',True)
+    params:
+        - units : 200
+        - return_sequences : True
+        - activation : 'tanh'
+        - recurrent_activation : 'sigmoid'
+        - use_bias : True
+
+tf.GRU2:
+    name: gru
+    define: tf.keras.layers.GRU()
+    type: trans_dimT
+    inputs:
+        - ('X,T,E',True)
+    params:
+        - units : 200
+        - return_sequences : True
+        - activation : 'tanh'
+        - recurrent_activation : 'sigmoid'
+        - use_bias : True
+
+cus_tf.MultiHeadAttention:
+    name: multihead_attention
+    define: mf.layers.MultiHeadAttention()
+    type: trans_dimT
+    inputs:
+        - ('X,T,E',True)
+        - ('X,T1,E',True)
+        - ('X,T1,E',False)
+    outputs:
+        - (X,T,T1)
+    params:
+        - units : 200
+        - return_sequences : True
+        - activation : 'tanh'
+        - recurrent_activation : 'sigmoid'
+        - use_bias : True

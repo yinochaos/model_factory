@@ -1,24 +1,36 @@
 #!/usr/bin/env python
 
-"""Tests for `model_factory` package."""
 
-import pytest
-
-
-from model_factory import model_factory
+import unittest
+from model_factory.model_factory import DataSchema
+from model_factory.model_factory import ModelBuilder
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+class TestModelFactory (unittest.TestCase):
+    """Tests for `model_factory` package."""
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+    def setUp(self):
+        """Set up test fixtures, if any."""
+
+    def tearDown(self):
+        """Tear down test fixtures, if any."""
+        pass
+
+    def test_text_seq2seq_model(self):
+        """Test something."""
+        # init token_dicts
+        inputs = [DataSchema('query', 'text', 'int', ['T_q', 'a']),
+                  DataSchema('slots', 'text', 'int', ['b']),
+                  DataSchema('time', 'num', 'float32', ['T_q', 'c'])]
+        outputs = [DataSchema('domain', 'prob', 'int', ['C']),
+                   DataSchema('intent', 'prob', 'int32', ['D'])]
+        outputs = [DataSchema('domain', 'prob', 'int', ['C'])]
+        builder = ModelBuilder(max_grow_models=100, max_models=1000)
+        model_list = builder.build_model(inputs, outputs)
+        for model, i in zip(model_list, range(len(model_list))):
+            print('model', model)
+            model.show('outputs/' + str(i))
 
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+if __name__ == '__main__':
+    unittest.main()

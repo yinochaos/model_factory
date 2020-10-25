@@ -19,6 +19,8 @@ import tqdm
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
 import numpy as np
+import math
+import sys
 
 """ model interface
 """
@@ -31,7 +33,6 @@ class Model(object):
         self.model = model
         self.model.compile(optimizer=self.optimizer, loss=self.loss)
         self.num_loss = 1
-        #self.train_step = self.model.train_on_batch
 
     def fit(self, train_dataset, batch_size, epochs=1, valid_dataset=None, step_per_epoch=None,
             callbacks: List[tf.keras.callbacks.Callback] = None, bar_step=1, train_dataset_len=None):
@@ -41,7 +42,7 @@ class Model(object):
         callbacks.append(history_callback)
 
         for c in callbacks:
-            c.set_model(self)
+            c.set_model(self.model)
             c.on_train_begin()
 
         epochs_seq = [i for i in range(epochs)]
@@ -64,13 +65,20 @@ class Model(object):
             for (batchs, (inputs, targets)) in enumerate(train_dataset):
                 #print('inputs', inputs)
                 #print('targets', targets)
-                if inputs.shape[0] != batch_size:
-                    continue
-                #if targets.shape[0] != batch_size:
+                if isinstance(inputs, (tuple, list)):
+                    if inputs[0].shape[0] != batch_size:
+                        continue
+                else:
+                    if inputs.shape[0] != batch_size:
+                        continue
+                # if targets.shape[0] != batch_size:
                 #    continue
                 batch_loss = self.train_step(inputs, targets)
                 if not isinstance(batch_loss, float):
                     batch_loss = batch_loss.numpy()
+                if math.isnan(batch_loss):
+                    print("batch_loss is nan in batchs(%d)" % (batchs), file=sys.stderr)
+                    continue
                 # TODO add multi_loss
                 total_loss.append(batch_loss)
                 if batchs % bar_step == 0:
@@ -89,8 +97,3 @@ class Model(object):
 
     def train_step(self, inputs, targets):
         return self.model.train_on_batch(inputs, targets)
-        """
-        with tf.GradientTape() as tape:
-            predictions, dec_hidden, _ = self.decoder(dec_input, dec_hidden, enc_output)
-            loss += self.loss(targets[:, t], predictions)
-        """
