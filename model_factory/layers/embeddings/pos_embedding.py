@@ -60,7 +60,7 @@ class TransformerEmbedding(tf.keras.layers.Layer):
 
     # @tf.function
     def call(self, inputs, training=False):
-        if self.token_type_embeddings is None:
+        if self.token_type_embeddings is not None:
             word_ids, pos_ids, type_ids = inputs
         else:
             word_ids, pos_ids = inputs
@@ -68,13 +68,19 @@ class TransformerEmbedding(tf.keras.layers.Layer):
             word_embeddings = self.word_embeddings(word_ids)
         else:
             word_embeddings = self.shared_word_embeddings(self.word_embeddings(word_ids))
+        print('type_ids AAA ', type_ids)
         if self.token_type_embeddings is None:
             embeddings = word_embeddings + self.position_embeddings(pos_ids)
         else:
-            embeddings = word_embeddings + self.position_embeddings(pos_ids) + self.token_type_embeddings(type_ids)
+            embeddings = word_embeddings + self.position_embeddings(pos_ids)
+            embeddings = embeddings + self.token_type_embeddings(type_ids)
+        print('emb  ', embeddings)
         embeddings = self.LayerNorm(embeddings)
+        print('emb1 ', embeddings)
         embeddings = self.dropout(embeddings, training=training)
+        print('emb2  ', embeddings)
         return embeddings
+
 
 class RelativePositionalEmbedding(tf.keras.layers.Layer):
     def __init__(self, demb, **kwargs):

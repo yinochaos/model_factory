@@ -20,6 +20,7 @@
 
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
+from model_factory.utils.activations import get_activation
 from model_factory.layers.attentions.multihead_attention import MultiHeadAttention
 
 
@@ -40,13 +41,21 @@ class AddNorm(tf.keras.layers.Layer):
 
 class Transformer(tf.keras.layers.Layer):
     def __init__(self, num_heads, head_size, units, activation, hidden_size, dropout_prob,
-                 layer_norm_eps, kernel_initializer='glorot_uniform', **kwargs):
+                 layer_norm_eps=1e-12, kernel_initializer='glorot_uniform', **kwargs):
+        """
+        num_heads : Attention的头数
+        head_size :
+        units : FeedForward的隐层维度
+        activation : FeedForward的激活函数
+        hidden_size :
+        dropout_prob :
+        """
         super().__init__(**kwargs)
         # @TODO add MultiHeadAttention
         self.attention = MultiHeadAttention(num_heads=num_heads, head_size=head_size, name="attention")
         self.add_norm_attention = AddNorm(hidden_size, dropout_prob, layer_norm_eps, kernel_initializer)
         self.add_norm_out = AddNorm(hidden_size, dropout_prob, layer_norm_eps, kernel_initializer)
-        self.forward = tf.keras.layers.Dense(units, activation=activation, kernel_initializer=kernel_initializer)
+        self.forward = tf.keras.layers.Dense(units, activation=get_activation(activation), kernel_initializer=kernel_initializer)
 
     def call(self, inputs, attention_mask=None, is_output_attentions=False, training=False):
         # TODO add convert attention_mask from (B,Sq) --> (B,H,Sq,Sq)

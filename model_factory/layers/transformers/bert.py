@@ -20,8 +20,8 @@
 
 from typing import Any, Tuple, List, Dict
 import tensorflow as tf
-from model_factory.layers.transformers.transformer import Transformer
 from model_factory.layers.embeddings.pos_embedding import TransformerEmbedding
+from model_factory.layers.transformers.transformer import Transformer
 
 
 class Bert(tf.keras.layers.Layer):
@@ -72,7 +72,9 @@ class Bert(tf.keras.layers.Layer):
 
         first_token_tensor = hidden_states[:, 0]
         pooler_output = self.dense(first_token_tensor)
-        return (hidden_states, pooler_output, all_hidden_states, all_attentions)
+        return (hidden_states, pooler_output)
+        #return (hidden_states, pooler_output, all_hidden_states, all_attentions) # None raise Error: AttributeError: 'NoneType' object has no attribute '_keras_history'
+        #return pooler_output
 
 
 class Albert(tf.keras.layers.Layer):

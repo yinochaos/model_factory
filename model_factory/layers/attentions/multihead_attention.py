@@ -18,7 +18,7 @@
 """ model interface
 """
 
-from typing import Any, Tuple, List, Dict, Union, Callable
+import math
 import tensorflow as tf
 
 
@@ -40,12 +40,13 @@ class MultiHeadAttention(tf.keras.layers.Layer):
             self.all_head_size, use_bias=use_bias, kernel_initializer=kernel_initializer, name="value"
         )
         self.dropout = tf.keras.layers.Dropout(dropout)
-        self.scale = 1 / tf.sqrt(self.key_size)
+        #self.scale = 1 / tf.sqrt(self.key_size)
+        self.scale = math.sqrt(self.key_size)
 
     # attention_mask : a binary Tensor of shape `[batch_size?, num_heads?, query_elements, key_elements]`
     def call(self, inputs, attention_mask=None, is_output_attentions=False, training=False):
 
-        query = inputs
+        query = inputs[0]
         key = inputs[1]
         value = inputs[2] if len(inputs) > 2 else key
 
